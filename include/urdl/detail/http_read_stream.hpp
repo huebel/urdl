@@ -19,6 +19,9 @@
 #include <boost/asio/write.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/detail/bind_handler.hpp>
+#include <boost/archive/iterators/base64_from_binary.hpp>
+#include <boost/archive/iterators/transform_width.hpp>
+#include <boost/algorithm/string.hpp>
 #include <algorithm>
 #include <ostream>
 #include <iterator>
@@ -34,6 +37,14 @@
 
 namespace urdl {
 namespace detail {
+
+inline
+std::string encode64(const std::string &val) {
+    using namespace boost::archive::iterators;
+    using It = base64_from_binary<transform_width<std::string::const_iterator, 6, 8>>;
+    auto tmp = std::string(It(std::begin(val)), It(std::end(val)));
+    return tmp.append((3 - val.size() % 3) % 3, '=');
+}
 
 template <typename Stream>
 class http_read_stream
@@ -107,6 +118,9 @@ public:
         request_stream << "Content-Type: ";
         request_stream << request_content_type << "\r\n";
       }
+    }
+    if (u.user_info().length()) {
+    	request_stream << "Authorization: Basic " << encode64(u.user_info()) << "\r\n";
     }
     if (user_agent.length())
       request_stream << "User-Agent: " << user_agent << "\r\n";
