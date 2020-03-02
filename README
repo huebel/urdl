@@ -2,3 +2,9 @@ urdl version 0.1
 Released Wednesday, 03 June 2009.
 
 See doc/index.html for build information and API documentation.
+
+Added by huebel:
+When the url object given to read_stream contains data in its user_info,
+an "Autorization: Basic " HTTP header is added with the base64 encoded
+user_info data. This makes it usable with HTTP servers requiring basic
+authentication.
